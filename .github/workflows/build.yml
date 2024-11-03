@@ -11,6 +11,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: NPM Install
+        run: npm install # Add your specific npm install command
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
