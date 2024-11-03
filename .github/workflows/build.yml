@@ -63,7 +63,7 @@ jobs:
 
       - name: Deploy to kubernetes
         run: kubectl apply -f deployment-service.yml
-        working-directory: ./build
+        working-directory: build
   
 #       - name: Send a Slack Notification
 #         if: always()
