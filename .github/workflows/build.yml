@@ -1,4 +1,4 @@
-name: Build
+name: Build,Analyze,scan
 
 on:
   push:
@@ -7,22 +7,67 @@ on:
 
 
 jobs:
-  build:
+  build-analyze-scan:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     steps:
-      - name: NPM Install
-        run: npm install # Add your specific npm install command
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: sonarsource/sonarqube-scan-action@master
+
+      - name: Build and analyze with SonarQube
+        uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: sonarsource/sonarqube-quality-gate-action@master
-      #   timeout-minutes: 5
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          
+      - name: npm install dependency
+        run: npm install
+
+    #   - name: Trivy file scan
+    #     run: trivy fs . > trivyfs.txt
+
+      - name: Docker Build and push
+        run: |
+            docker build -t candycrush .
+            docker tag candycrush parasbhardwaj666/candycrush:${{ github.run_number }}
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+            docker push parasbhardwaj666/candycrush:${{ github.run_number }}
+        env:
+          DOCKER_CLI_ACI: 1
+
+    #   - name: Image scan
+    #     run: trivy image sevenajay/candycrush:latest > trivyimage.txt
+
+#   deploy:
+#    needs: build-analyze-scan   
+#    runs-on: [self-hosted]
+#    steps:
+#       - name: docker pull image
+#         run: docker pull sevenajay/candycrush:latest
+
+#       - name: Image scan
+#         run: trivy image sevenajay/candycrush:latest > trivyimagedeploy.txt  
+  
+#       - name: Deploy to container
+#         run: docker run -d --name game -p 3000:3000 sevenajay/candycrush:latest
+
+#       - name: Update kubeconfig
+#         run: aws eks --region ap-south-1 update-kubeconfig --name EKS_CLOUD
+
+#       - name: Deploy to kubernetes
+#         run: kubectl apply -f deployment-service.yml
+  
+#       - name: Send a Slack Notification
+#         if: always()
+#         uses: act10ns/slack@v1
+#         with:
+#           status: ${{ job.status }}
+#           steps: ${{ toJson(steps) }}
+#           channel: '#githubactions-eks'
+#         env:
+#           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  
+
+        
