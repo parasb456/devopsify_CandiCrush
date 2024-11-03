@@ -50,6 +50,10 @@ jobs:
     #   - name: Image scan
     #     run: trivy image sevenajay/candycrush:latest > trivyimagedeploy.txt  
   
+      - name: Stop and remove any container using port 3000
+        run: |
+            docker ps -q --filter "publish=3000" | grep -q . && docker rm -f $(docker ps -q --filter "publish=3000") || echo "No container is using port 3000"
+
       - name: Deploy to container
         run: docker run -d --name game-${{ github.run_number }} -p 3000:3000 parasbhardwaj666/candycrush:${{ github.run_number }}
 
