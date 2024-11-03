@@ -51,7 +51,8 @@ jobs:
     #     run: trivy image sevenajay/candycrush:latest > trivyimagedeploy.txt  
   
       - name: Deploy to container
-        run: docker run -d --name game -p 3000:3000 parasbhardwaj666/candycrush:${{ github.run_number }}
+        run: docker run -d --name game-${{ github.run_number }} -p 3000:3000 parasbhardwaj666/candycrush:${{ github.run_number }}
+
 
       - name: Update kubeconfig
         run: aws eks --region ca-central-1 update-kubeconfig --name EKS_CLOUD
