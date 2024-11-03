@@ -62,10 +62,8 @@ jobs:
         run: aws eks --region ca-central-1 update-kubeconfig --name EKS_CLOUD
 
       - name: Deploy to kubernetes
-
-        run:    |
-            cd build
-            kubectl apply -f deployment-service.yml
+        run: kubectl apply -f deployment-service.yml
+        working-directory: ./build
   
 #       - name: Send a Slack Notification
 #         if: always()
